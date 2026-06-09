@@ -4,7 +4,7 @@ Triggered when `/ca` runs and **no `CARCH.md` files exist** anywhere in the repo
 
 ## 0. Expertise callout (do this first, every time)
 
-Open with a clear warning, verbatim in intent:
+Open with a clear warning conveying exactly this:
 
 > Bootstrapping CA requires someone with deep architectural knowledge of this codebase. The references created now become the source of truth every future check relies on. If that is not you right now, stop and return with the right person.
 
@@ -34,7 +34,7 @@ For each confirmed subsystem, ask these questions one subsystem at a time (not a
 
 ## 4. Draft and place
 
-For each answered subsystem, draft a `CARCH.md` using the template in `SKILL.md` and place it at that subsystem's directory boundary. Put cross-cutting concerns (global rules, service ownership, data-flow constraints) in a root-level `CARCH.md`. Every file gets the standardized header.
+For each answered subsystem, draft a `CARCH.md` using the template in `SKILL.md` and place it at that subsystem's directory boundary. Most patterns captured during bootstrap are `established`; the experiment fields (Experiment ID, Pending Remediation) apply only later, during the experiment lifecycle. Put cross-cutting concerns (global rules, service ownership, data-flow constraints) in a root-level `CARCH.md`. Every file gets the standardized header.
 
 ## 5. Coverage summary
 
@@ -67,4 +67,6 @@ This is the only CA content in any instruction file — the invocation instructi
 | Cline | `.clinerules/ca.md` (file or directory form) |
 | Cross-agent standard / fallback | `AGENTS.md` |
 
-For Cursor and Windsurf, write the line inside the harness's rule-file wrapper convention; elsewhere append a plain markdown line.
+For Cursor (`.mdc`) and Windsurf rule files, wrap the line in the harness's rule-file format — for Cursor, a YAML frontmatter block with `alwaysApply: true` above the line; for Windsurf, a plain markdown rule file. Elsewhere, append a plain markdown line.
+
+Note: the OpenAI Codex row and the cross-agent fallback row are the same physical file (`AGENTS.md`). Because appends are idempotent, the invocation line is written to it at most once regardless of how many rows point there.
