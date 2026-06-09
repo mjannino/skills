@@ -18,7 +18,7 @@ CA is modeled after CI/CD: lightweight, automatic, and continuous, rather than a
 
 ## Design Principles
 
-- **LLM-agnostic.** All artifacts are plain markdown readable by any agent. No dependency on Claude Code-specific mechanisms beyond an optional CLAUDE.md invocation line.
+- **LLM-agnostic.** All artifacts are plain markdown readable by any agent. The only harness-specific touch is a one-line invocation instruction added to whatever agent-instruction file(s) the repo already uses (see the per-harness table).
 - **Context-frugal.** References are sparse (one per meaningful subsystem boundary) and loaded only when relevant. The skill never bulk-loads architecture into context.
 - **Unburdening over gatekeeping.** Clean commits produce one line of output. Experiments are supported, not blocked. Developers are never forced to run CA — the skill is made *aware* and proactive, not coercive.
 - **Deterministic discovery, LLM judgment for application.** Which references to load is computed from the diff; how rules apply is the LLM's judgment.
@@ -32,7 +32,7 @@ CA installs as one skill (`/ca`). The LLM selects a mode from context:
 | Mode | Trigger |
 |------|---------|
 | Bootstrap | `/ca` run when no `CARCH.md` files exist in the repo |
-| Check | Pre-commit (via CLAUDE.md instruction) or explicit `/ca` |
+| Check | Pre-commit (via agent-instruction line) or explicit `/ca` |
 | Promote / Deprecate | `/ca promote` or `/ca deprecate` |
 
 ---
@@ -86,13 +86,30 @@ Human-readable, greppable identifier (e.g. `exp-event-sourcing-2026-06`) assigne
 
 ---
 
-## Artifact: CLAUDE.md instruction
+## Artifact: Agent instruction line
 
-Bootstrap appends one line to the repo's `CLAUDE.md`:
+Bootstrap appends one short instruction to the repo's agent-instruction file(s):
 
-> Run a CA check (`/ca`) before any commit.
+> Run a CA check (`/ca`) before any commit — load the nearest `CARCH.md` references and verify the change does not introduce architectural drift.
 
-This is the only CA content in `CLAUDE.md` — the invocation instruction, never architectural knowledge. It makes the check automatic for any LLM working in the repo without coercing the developer; `/ca` remains an explicit manual escape hatch.
+This is the only CA content in any instruction file — the invocation instruction, never architectural knowledge (which lives exclusively in `CARCH.md`). It makes the check automatic for any agent working in the repo without coercing the developer; `/ca` remains an explicit manual escape hatch.
+
+### Per-harness instruction files
+
+To stay broadly useful, bootstrap detects which agent-instruction files already exist in the repo and appends the line to **every one present**. If none exist, it creates `AGENTS.md` as the cross-agent default.
+
+| Harness | Instruction file |
+|---------|------------------|
+| Claude Code (Anthropic) | `CLAUDE.md` |
+| OpenAI Codex / Codex CLI | `AGENTS.md` |
+| Gemini CLI (Google) | `GEMINI.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor | `.cursor/rules/ca.mdc` (legacy: `.cursorrules`) |
+| Windsurf | `.windsurf/rules/ca.md` (legacy: `.windsurfrules`) |
+| Cline | `.clinerules/ca.md` (file or directory form) |
+| Cross-agent standard / fallback | `AGENTS.md` |
+
+The invocation line is identical across files; only the location and (for Cursor/Windsurf) the rule-file wrapper differ. Because skills.sh maps a skill's slash command across supported harnesses, `/ca` is a valid reference in each. The skill must avoid duplicate appends — if the line is already present in a file, it is left untouched (idempotent bootstrap).
 
 ---
 
@@ -110,13 +127,13 @@ Triggered when `/ca` runs and no `CARCH.md` files exist.
    - Is there a canonical file that exemplifies correct usage?
 5. **Draft and place.** For each answered subsystem, the LLM drafts a `CARCH.md` and places it at the appropriate boundary. Cross-cutting concerns go to a root-level `CARCH.md`.
 6. **Coverage summary.** Close with a list of every `CARCH.md` created, the subsystems covered, and areas identified but skipped — an entry point for validating coverage.
-7. **Install invocation line** in `CLAUDE.md`.
+7. **Install invocation line** in the repo's agent-instruction file(s) — detect every present file from the per-harness table and append idempotently; create `AGENTS.md` if none exist.
 
 ---
 
 ## Mode 2: Ongoing Check
 
-Triggered automatically pre-commit (via CLAUDE.md) or explicitly via `/ca`.
+Triggered automatically pre-commit (via the agent-instruction line) or explicitly via `/ca`.
 
 ### Reference discovery (deterministic)
 
