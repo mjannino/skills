@@ -7,6 +7,8 @@ description: Use before committing changes in a large or monolithic codebase to 
 
 Modeled after CI/CD: a lightweight, continuous architectural check rather than a periodic manual review. CA keeps a large codebase healthy by leaving tightly scoped architectural references (`CARCH.md`) near the code they govern, then checking changes against them before commit — catching drift early while keeping engineers unburdened.
 
+Invoked as `/ca` — the shorthand for the `continuous-architecture` skill. `/ca promote` and `/ca deprecate` are the same skill entered in Lifecycle mode.
+
 ## When to Use
 
 - **Before any commit** — run a drift check on the pending changes (this is the default mode).
@@ -66,14 +68,12 @@ Every `CARCH.md` begins with exactly this line, so any agent or human knows what
 
 ### Experiment ID
 
-A human-readable, greppable identifier (e.g. `exp-event-sourcing-2026-06`) assigned when an experimental pattern is established. It links the same experiment across horizontally-unrelated subsystems so deprecation can find every adopting site. Uniqueness is maintained by well-defined experiment names.
+A human-readable, greppable identifier (e.g. `exp-event-sourcing-2026-06`) assigned when an experimental pattern is established. It links the same experiment across horizontally-unrelated subsystems so deprecation can find every adopting site. Uniqueness is maintained by well-defined experiment names. Deprecation finds adopters by grepping for the full ID string literally (e.g. `grep -rl "exp-event-sourcing-2026-06"`), so the exact token must be reused verbatim wherever the experiment is adopted — the `-YYYY-MM` suffix is part of the literal token, not a parsed field.
 
 ## Reference Discovery (shared by Check and Lifecycle)
 
-Discovery is algorithmic and repeatable. Application of the loaded rules is your judgment.
-
 1. Compute the change set: by default the diff between the merge-base with the default branch and the working tree (committed and uncommitted), so a pre-commit check sees everything the branch introduces.
-2. Run `git diff --name-only <merge-base>...` for changed paths and `git diff --name-status <merge-base>...` to detect added paths.
+2. Run `git diff --name-only $(git merge-base HEAD <default-branch>)` for changed paths and `git diff --name-status $(git merge-base HEAD <default-branch>)` to detect added paths. (Diffing against the merge-base with no `..`/`...` includes both committed and uncommitted changes.)
 3. For each changed file path, walk the directory tree from the file up to the repo root, collecting every `CARCH.md` in the ancestry chain.
 4. Load those `CARCH.md` files (sparseness keeps the chain bounded — typically 1–3 files), then load the diff content and apply rules.
 5. For large diffs, process in per-subsystem chunks — one `CARCH.md` scope at a time — rather than all at once.
