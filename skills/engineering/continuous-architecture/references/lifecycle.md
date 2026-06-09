@@ -15,7 +15,7 @@ One line per area. Never blocks the developer's work.
 Invoked when an experiment graduates to an established pattern:
 
 1. Confirm the pattern name and the `CARCH.md` it lives in.
-2. Update its status from `experimental` to `established` (remove the experiment ID field once established, or leave it as historical record — your call, but be consistent within a repo).
+2. Update its status from `experimental` to `established` and remove the experiment ID field — IDs belong only to `experimental`/`deprecated` entries. (If you want to preserve provenance, record the retired ID in a commit message rather than the entry.)
 3. Suggest other subsystems where the pattern should now be adopted, based on similar code.
 4. Flag existing code in the relevant subtree still following the old pattern as migration candidates.
 5. Commit the `CARCH.md` update.
