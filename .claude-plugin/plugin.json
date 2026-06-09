@@ -1,4 +1,6 @@
 {
   "name": "mjannino-skills",
-  "skills": []
+  "skills": [
+    "./skills/engineering/continuous-architecture"
+  ]
 }

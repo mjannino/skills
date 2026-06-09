@@ -4,4 +4,4 @@ Code-focused skills for daily development work.
 
 | Skill | Description |
 |-------|-------------|
-| *(none yet)* | |
+| [continuous-architecture](continuous-architecture/SKILL.md) | Prevent architectural and pattern drift in large codebases via colocated CARCH.md references checked before commit. |
