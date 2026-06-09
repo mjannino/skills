@@ -22,17 +22,17 @@ Invoked when an experiment graduates to an established pattern:
 
 ## /ca deprecate
 
-Invoked when an experiment is abandoned. Applies identically to all three intent types (prototype, pattern experiment, new pattern needed). **Abandoning an experiment requires a code change to enforce the codebase back to the established pattern — deprecation is not complete until every adopting instance is remediated.**
+Invoked when an experiment is abandoned. Applies identically to all three intent types (prototype, pattern experiment, new pattern needed). **Abandoning an experiment requires code changes to enforce the codebase back to the established pattern — deprecation is not complete until every adopting instance is remediated.** Drive this proactively across the subsystems located in step 2; the `## Pending Remediation` checklist (step 3) tracks the work until it is cleared, and as a backstop resurfaces on future checks that touch each area.
 
 1. **Update status** → `deprecated` in the experiment's home `CARCH.md`, with a brief note on why it was abandoned (institutional knowledge).
 2. **Locate all instances across horizontal slices.** Grep every `CARCH.md` in the repo for the experiment ID to find every adopting subsystem:
    ```bash
    grep -rl "exp-<readable-slug>-<YYYY-MM>" --include=CARCH.md .
    ```
-   Then within each adopting subsystem, locate the code following the experimental pattern (use the entry's canonical ref and scope note as the guide).
+   Then within each adopting subsystem, locate the code following the experimental pattern (use the entry's canonical ref and scope note as the guide). The grep finds only adopters that were ID-linked when the pattern was adopted (see Check mode); any code that copied the pattern without going through `/ca` will not be found by the grep and must be caught by ordinary Tier 1 checks as those files change — this is a known limitation of diff-based detection.
 3. **Enumerate explicitly** into a `## Pending Remediation` checklist inside each relevant `CARCH.md` — concrete files and locations, not a vague note. The `CARCH.md` file serves as the working memory for this checklist.
 4. **Guide remediation** toward the established pattern, using its canonical ref as the target state.
-5. **Verify** with a Tier 1 check on the changed files, confirming no instances of the experimental pattern remain.
+5. **Verify** that every item in the `## Pending Remediation` checklist (across all affected `CARCH.md` files) has been addressed, running a Tier 1 check on each remediated file to confirm no instances of the experimental pattern remain.
 6. **Persist the checklist across checks.** The `## Pending Remediation` section resurfaces on every Check-mode walk that touches the area until every box is cleared. When the last box is checked, remove the section.
 
 Deprecated experimental code is, in effect, a set of Tier 1 violations against the re-established pattern — that is the correct framing once the experiment is over.
